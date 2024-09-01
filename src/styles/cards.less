@@ -129,6 +129,14 @@ input[type="radio"]:checked + .filterDiv::after {
     z-index: 1;
 }
 
+input[type="radio"]:checked + .discarding.filterDiv {
+    box-shadow: 0 0 0 1px #303030, 0 0 7px 10px #c92323;
+}
+
+input[type="radio"]:checked + .discarding.filterDiv::after {
+    background: #c92323;
+}
+
 .filterDiv3 {
     position: relative;
     background: #eeeeee;

@@ -1,5 +1,6 @@
 # Server Settings
 .env
+.env.netangels
 *.pem
 db/*
 tests/integration/.env

@@ -345,7 +345,7 @@ export class Executor implements BehaviorExecutor {
             message('Select ${0} card(s) to discard', (b) => b.number(count)),
             undefined,
             cards,
-            {min: count, max: count},
+            {min: count, max: count, isDiscarding: true},
           ).andThen((cards) => {
             for (const c of cards) {
               inplaceRemove(player.cardsInHand, c);

@@ -60,6 +60,7 @@ export type SelectCardModel = BaseInputModel & {
   showOnlyInLearnerMode: boolean;
   selectBlueCardAction: boolean;
   showOwner: boolean;
+  isDiscarding: boolean;
 }
 
 export type SelectColonyModel = BaseInputModel & {
