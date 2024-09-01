@@ -129,12 +129,14 @@ input[type="radio"]:checked + .filterDiv::after {
     z-index: 1;
 }
 
+input[type="checkbox"]:checked + .discarding.filterDiv,
 input[type="radio"]:checked + .discarding.filterDiv {
-    box-shadow: 0 0 0 1px #303030, 0 0 7px 10px #c92323;
+    box-shadow: 0 0 0 1px #303030, 0 0 7px 10px #b5472dfc;
 }
 
+input[type="checkbox"]:checked + .discarding.filterDiv::after,
 input[type="radio"]:checked + .discarding.filterDiv::after {
-    background: #c92323;
+    background: #b5472dfc;
 }
 
 .filterDiv3 {
