@@ -48,7 +48,7 @@ export class FocusedOrganization extends PreludeCard implements IActionCard {
           }
           return undefined;
         }),
-      new SelectCard('Select card to discard', 'select', player.cardsInHand)
+      new SelectCard('Select card to discard', 'select', player.cardsInHand, {isDiscarding: true})
         .andThen(([card]) => {
           player.discardCardFromHand(card);
           return undefined;
@@ -62,4 +62,3 @@ export class FocusedOrganization extends PreludeCard implements IActionCard {
     });
   }
 }
-
