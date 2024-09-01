@@ -72,6 +72,11 @@ export default Vue.extend({
       required: false,
       default: Color.NEUTRAL,
     },
+    isDiscarding: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     const cardName = this.card.name;
@@ -128,6 +133,10 @@ export default Vue.extend({
         classes.push('card-unavailable');
       } else if (!getPreferences().experimental_ui && this.actionUsed) {
         classes.push('card-unavailable');
+      }
+
+      if (this.isDiscarding) {
+        classes.push('discarding');
       }
 
       if (this.isStandardProject()) {

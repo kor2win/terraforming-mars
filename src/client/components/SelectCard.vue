@@ -6,7 +6,7 @@
               <input v-if="selectOnlyOneCard" type="radio" v-model="cards" :value="card" />
               <input v-else type="checkbox" v-model="cards" :value="card" :disabled="playerinput.max !== undefined && Array.isArray(cards) && cards.length >= playerinput.max && cards.includes(card) === false" />
             </template>
-            <Card :card="card" :actionUsed="isCardActivated(card)" :robotCard="robotCard(card)">
+            <Card :card="card" :actionUsed="isCardActivated(card)" :robotCard="robotCard(card)" :isDiscarding="isDiscarding">
               <template v-if="playerinput.showOwner">
                 <div :class="'card-owner-label player_translucent_bg_color_'+ getOwner(card).color">
                   {{getOwner(card).name}}
@@ -178,6 +178,9 @@ export default Vue.extend({
       return this.playerinput.max !== undefined &&
              this.playerinput.max > 1 &&
              this.playerinput.min === 0;
+    },
+    isDiscarding(): boolean {
+      return this.playerinput.isDiscarding;
     },
   },
 });
