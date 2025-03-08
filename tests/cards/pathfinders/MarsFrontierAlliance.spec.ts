@@ -9,10 +9,10 @@ import {SponsoredMohole} from '../../../src/server/cards/turmoil/SponsoredMohole
 import {OrOptions} from '../../../src/server/inputs/OrOptions';
 import {addOcean} from '../../TestingUtils';
 import {Phase} from '../../../src/common/Phase';
-import {TestPlayer} from 'tests/TestPlayer';
+import {TestPlayer} from '../../TestPlayer';
 import {IGame} from '../../../src/server/IGame';
 
-describe('MarsFrontierAlliance', function() {
+describe('MarsFrontierAlliance', () => {
   let card: MarsFrontierAlliance;
   let turmoil: Turmoil;
   let player: TestPlayer;
@@ -32,10 +32,10 @@ describe('MarsFrontierAlliance', function() {
     player.playCorporationCard(card);
     runAllActions(game);
     const selectParty = getWaitingFor(player);
-    expect(selectParty.options.length).to.equal(6);
+    expect(selectParty.options).has.length(6);
   });
 
-  it('New generation - switch of allied party', function() {
+  it('New generation - switch of allied party', () => {
     player.corporations.push(card);
     game.generation = 10;
 
@@ -55,7 +55,7 @@ describe('MarsFrontierAlliance', function() {
     runAllActions(game);
 
     const selectBonus: OrOptions = getWaitingFor(player);
-    expect(selectBonus.options.length).to.eq(2);
+    expect(selectBonus.options).has.length(2);
     player.process({type: 'or', index: 0, response: {type: 'option'}});
     expect(game.turmoil!.rulingParty).to.eq(reds);
     expect(player.alliedParty?.partyName).to.eq(unity.name);

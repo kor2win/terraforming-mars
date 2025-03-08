@@ -20,6 +20,7 @@ import {SelectPaymentDeferred} from '../deferredActions/SelectPaymentDeferred';
 import {Phase} from '../../common/Phase';
 import {Units} from '../../common/Units';
 import {LogHelper} from '../LogHelper';
+import {Message} from '../../common/logs/Message';
 
 export class UnderworldExpansion {
   private constructor() {}
@@ -154,7 +155,7 @@ export class UnderworldExpansion {
    *
    * If a player played Concession Rights this generation, they automatically ignore placement restrictions.
    */
-  public static excavatableSpaces(player: IPlayer, ignorePlacementRestrictions: boolean = false, ignoreConcsesionRights: boolean = false) {
+  public static excavatableSpaces(player: IPlayer, options?: {ignorePlacementRestrictions?: boolean, ignoreConcsesionRights?: boolean}) {
     const board = player.game.board;
 
     // Compute any space that any player can excavate.
@@ -170,13 +171,13 @@ export class UnderworldExpansion {
       return space.spaceType !== SpaceType.COLONY;
     });
 
-    if (ignorePlacementRestrictions === true) {
+    if (options?.ignorePlacementRestrictions === true) {
       return anyExcavatableSpaces;
     }
 
     const concessionRights = player.getPlayedCard(CardName.CONCESSION_RIGHTS);
     if (concessionRights?.generationUsed === player.game.generation) {
-      if (ignoreConcsesionRights === false) {
+      if (options?.ignoreConcsesionRights !== true) {
         return anyExcavatableSpaces;
       }
     }
@@ -317,7 +318,7 @@ export class UnderworldExpansion {
   }
 
   // TODO(kberg): turn into a deferred action?
-  public static maybeBlockAttack(target: IPlayer, perpetrator: IPlayer, cb: (proceed: boolean) => PlayerInput | undefined): PlayerInput | undefined {
+  public static maybeBlockAttack(target: IPlayer, perpetrator: IPlayer, msg: Message | string, cb: (proceed: boolean) => PlayerInput | undefined): PlayerInput | undefined {
     if (target.game.gameOptions.underworldExpansion === false) {
       return cb(true);
     }
@@ -328,6 +329,7 @@ export class UnderworldExpansion {
     }
     const options = new OrOptions();
     options.title = message('Spend 1 corruption to block an attack by ${0}?', (b) => b.player(perpetrator));
+    options.warning = msg;
     if (privateMilitaryContractor !== undefined && militaryContractorFighters > 0) {
       options.options.push(
         new SelectOption(

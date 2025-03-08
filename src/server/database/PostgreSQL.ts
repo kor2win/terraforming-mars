@@ -6,10 +6,11 @@ import {GameId, ParticipantId, isGameId, safeCast} from '../../common/Types';
 import {SerializedGame} from '../SerializedGame';
 import {daysAgoToSeconds, stringToNumber} from './utils';
 import {GameIdLedger} from './IDatabase';
+import {Session, SessionId} from '../auth/Session';
 
 type StoredSerializedGame = Omit<SerializedGame, 'gameOptions' | 'gameLog'> & {logLength: number};
 
-export const POSTGRESQL_TABLES = ['game', 'games', 'game_results', 'participants', 'completed_game'] as const;
+export const POSTGRESQL_TABLES = ['game', 'games', 'game_results', 'participants', 'completed_game', 'session'] as const;
 
 const POSTGRES_TRIM_COUNT = stringToNumber(process.env.POSTGRES_TRIM_COUNT, 10);
 
@@ -98,10 +99,17 @@ export class PostgreSQL implements IDatabase {
       completed_time timestamp default now(),
       PRIMARY KEY (game_id));
 
+    CREATE TABLE IF NOT EXISTS session(
+      session_id varchar not null,
+      data varchar not null,
+      expiration_time timestamp not null,
+      PRIMARY KEY (session_id));
+
     CREATE INDEX IF NOT EXISTS games_i1 on games(save_id);
     CREATE INDEX IF NOT EXISTS games_i2 on games(created_time);
     CREATE INDEX IF NOT EXISTS participants_idx_ids on participants USING GIN (participants);
     CREATE INDEX IF NOT EXISTS completed_game_idx_completed_time on completed_game(completed_time);
+    CREATE INDEX IF NOT EXISTS session_idx_expiration_time on session(expiration_time);
     `;
     await this.client.query(sql);
   }
@@ -117,8 +125,6 @@ export class PostgreSQL implements IDatabase {
   }
 
   public async getGameIds(): Promise<Array<GameId>> {
-    // To only load incomplete games add `WHERE status=\'running\'`
-    // above "GROUP BY game_id) a"
     const sql: string =
     `SELECT games.game_id
     FROM games, (
@@ -149,7 +155,7 @@ export class PostgreSQL implements IDatabase {
 
   public async getGameId(participantId: ParticipantId): Promise<GameId> {
     try {
-      const res = await this.client.query('select game_id from participants where $1 = ANY(participants)', [participantId]);
+      const res = await this.client.query('SELECT game_id FROM participants WHERE $1 = ANY(participants)', [participantId]);
       if (res.rowCount === 0) {
         throw new Error(`Game for player id ${participantId} not found`);
       }
@@ -161,7 +167,7 @@ export class PostgreSQL implements IDatabase {
   }
 
   public async getSaveIds(gameId: GameId): Promise<Array<number>> {
-    const res = await this.client.query('SELECT distinct save_id FROM games WHERE game_id = $1', [gameId]);
+    const res = await this.client.query('SELECT DISTINCT save_id FROM games WHERE game_id = $1', [gameId]);
     const allSaveIds: Array<number> = [];
     res.rows.forEach((row) => {
       allSaveIds.push(row.save_id);
@@ -179,7 +185,8 @@ export class PostgreSQL implements IDatabase {
       FROM games
       LEFT JOIN game on game.game_id = games.game_id
       WHERE games.game_id = $1
-      ORDER BY save_id DESC LIMIT 1`,
+      ORDER BY save_id DESC
+      LIMIT 1`,
       [gameId],
     );
     if (res.rows.length === 0 || res.rows[0] === undefined) {
@@ -273,16 +280,14 @@ export class PostgreSQL implements IDatabase {
     }
     for (const gameId of gameIds) {
       // This isn't using await because nothing really depends on it.
-      this.compressCompletedGame(gameId);
+      await this.compressCompletedGame(gameId);
     }
   }
 
-  async compressCompletedGame(gameId: GameId): Promise<pg.QueryResult<any>> {
+  async compressCompletedGame(gameId: GameId): Promise<void> {
     const maxSaveId = await this.getMaxSaveId(gameId);
-    return this.client.query('DELETE FROM games WHERE game_id = $1 AND save_id < $2 AND save_id > 0', [gameId, maxSaveId])
-      .then(() => {
-        return this.client.query('DELETE FROM completed_game where game_id = $1', [gameId]);
-      });
+    await this.client.query('DELETE FROM games WHERE game_id = $1 AND save_id < $2 AND save_id > 0', [gameId, maxSaveId]);
+    await this.client.query('DELETE FROM completed_game where game_id = $1', [gameId]);
   }
 
   async saveGame(game: IGame): Promise<void> {
@@ -419,5 +424,25 @@ export class PostgreSQL implements IDatabase {
       map['rows-' + varz(table)] = result.rows[0].rowcount;
     }
     return map;
+  }
+
+  public async createSession(session: Session): Promise<void> {
+    await this.client.query('INSERT INTO session (session_id, data, expiration_time) VALUES($1, $2, $3)', [session.id, JSON.stringify(session.data), new Date(session.expirationTimeMillis)]);
+  }
+
+  public async deleteSession(sessionId: SessionId): Promise<void> {
+    await this.client.query('DELETE FROM session where session_id = $1', [sessionId]);
+  }
+
+  // TODO(kberg): this doesn't prune expired sessions.
+  async getSessions(): Promise<Array<Session>> {
+    const res = await this.client.query('SELECT session_id, data, expiration_time FROM session WHERE expiration_time > to_timestamp($1)', [Date.now() / 1000]);
+    return res.rows.map((row) => {
+      return {
+        id: row.session_id,
+        data: JSON.parse(row.data),
+        expirationTimeMillis: row.expiration_time.getTime(),
+      };
+    });
   }
 }

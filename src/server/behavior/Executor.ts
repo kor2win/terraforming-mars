@@ -55,6 +55,14 @@ export class Executor implements BehaviorExecutor {
       }
     }
 
+    if (behavior.drawCard !== undefined) {
+      const drawCard = behavior.drawCard;
+      const count = typeof(drawCard) === 'number' ? drawCard : ctx.count(drawCard.count);
+      if (game.projectDeck.canDraw(count) === false) {
+        return false;
+      }
+    }
+
     if (behavior.global !== undefined) {
       const g = behavior.global;
       if (g.temperature !== undefined && game.getTemperature() >= MAX_TEMPERATURE) {
@@ -428,12 +436,17 @@ export class Executor implements BehaviorExecutor {
     }
 
     if (behavior.tr !== undefined) {
-      player.increaseTerraformRating(ctx.count(behavior.tr));
+      const count = ctx.count(behavior.tr);
+      if (count >= 0) {
+        player.increaseTerraformRating(count);
+      } else {
+        player.decreaseTerraformRating(-count);
+      }
     }
     const addResources = behavior.addResources;
     if (addResources !== undefined) {
       if (player.game.inDoubleDown) {
-        player.game.log('Resources from ${1} cannot be added to ${2}', (b) => b.card(card).cardName(CardName.DOUBLE_DOWN));
+        player.game.log('Resources from ${0} cannot be added to ${1}', (b) => b.card(card).cardName(CardName.DOUBLE_DOWN));
       } else {
         const count = ctx.count(addResources);
         player.defer(() => {

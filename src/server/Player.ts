@@ -62,7 +62,7 @@ import {CeoExtension} from './CeoExtension';
 import {ICeoCard, isCeoCard} from './cards/ceos/ICeoCard';
 import {message} from './logs/MessageBuilder';
 import {calculateVictoryPoints} from './game/calculateVictoryPoints';
-import {IVictoryPointsBreakdown} from '../common/game/IVictoryPointsBreakdown';
+import {VictoryPointsBreakdown} from '../common/game/VictoryPointsBreakdown';
 import {YesAnd} from './cards/requirements/CardRequirement';
 import {PlayableCard} from './cards/IProjectCard';
 import {Supercapacitors} from './cards/promo/Supercapacitors';
@@ -78,8 +78,19 @@ import {TRSource} from '../common/cards/TRSource';
 import {IParty} from './turmoil/parties/IParty';
 import {AlliedParty} from './turmoil/AlliedParty';
 import {newStandardDraft} from './Draft';
+import {Message} from '../common/logs/Message';
+import {DiscordId} from './server/auth/discord';
 
 const THROW_STATE_ERRORS = Boolean(process.env.THROW_STATE_ERRORS);
+const DEFAULT_GLOBAL_PARAMETER_STEPS = {
+  [GlobalParameter.OCEANS]: 0,
+  [GlobalParameter.OXYGEN]: 0,
+  [GlobalParameter.TEMPERATURE]: 0,
+  [GlobalParameter.VENUS]: 0,
+  [GlobalParameter.MOON_HABITAT_RATE]: 0,
+  [GlobalParameter.MOON_MINING_RATE]: 0,
+  [GlobalParameter.MOON_LOGISTICS_RATE]: 0,
+} as const;
 
 export class Player implements IPlayer {
   public readonly id: PlayerId;
@@ -101,6 +112,8 @@ export class Player implements IPlayer {
   // Terraforming Rating
   private terraformRating: number = 20;
   public hasIncreasedTerraformRatingThisGeneration: boolean = false;
+
+  public user?: DiscordId;
 
   public get megaCredits(): number {
     return this.stock.megacredits;
@@ -235,6 +248,7 @@ export class Player implements IPlayer {
   public actionsTakenThisGame: number = 0;
   public victoryPointsByGeneration: Array<number> = [];
   public totalDelegatesPlaced: number = 0;
+  public globalParameterSteps: Record<GlobalParameter, number> = {...DEFAULT_GLOBAL_PARAMETER_STEPS};
 
   constructor(
     public name: string,
@@ -429,7 +443,7 @@ export class Player implements IPlayer {
     return;
   }
 
-  public getVictoryPoints(): IVictoryPointsBreakdown {
+  public getVictoryPoints(): VictoryPointsBreakdown {
     return calculateVictoryPoints(this);
   }
 
@@ -464,8 +478,22 @@ export class Player implements IPlayer {
     return true;
   }
 
-  public maybeBlockAttack(perpetrator: IPlayer, cb: (proceed: boolean) => PlayerInput | undefined): void {
-    this.defer(UnderworldExpansion.maybeBlockAttack(this, perpetrator, cb));
+  public maybeBlockAttack(perpetrator: IPlayer, msg: Message | string, cb: (proceed: boolean) => PlayerInput | undefined): void {
+    this.defer(UnderworldExpansion.maybeBlockAttack(this, perpetrator, msg, cb));
+  }
+
+  public attack(perpetrator: IPlayer, resource: Resource, count: number, options?: {log?: boolean, stealing?: boolean}): void {
+    const msg = message('Lose ${0} ${1}', (b) => b.number(count).string(resource));
+    this.maybeBlockAttack(perpetrator, msg, (proceed) => {
+      if (proceed) {
+        if (options?.stealing) {
+          this.stock.steal(resource, count, perpetrator, {log: options?.log});
+        } else {
+          this.stock.deduct(resource, count, {log: options?.log, from: perpetrator});
+        }
+      }
+      return undefined;
+    });
   }
 
   public resolveInsurance() {
@@ -523,6 +551,10 @@ export class Player implements IPlayer {
     }
 
     return requirementsBonus;
+  }
+
+  public onGlobalParameterIncrease(parameter: GlobalParameter, steps: number): void {
+    this.globalParameterSteps[parameter] += steps;
   }
 
   public removeResourceFrom(card: ICard, count: number = 1, options?: {removingPlayer? : IPlayer, log?: boolean}): void {
@@ -658,7 +690,7 @@ export class Player implements IPlayer {
   }
 
   /**
-   * @return {number} the number of avaialble megacredits. Which is just a shorthand for megacredits,
+   * ../..return {number} the number of avaialble megacredits. Which is just a shorthand for megacredits,
    * plus any units of heat available thanks to Helion (and Stormcraft, by proxy).
    */
   public spendableMegacredits(): number {
@@ -719,9 +751,7 @@ export class Player implements IPlayer {
       floaters: card.tags.includes(Tag.VENUS),
       microbes: card.tags.includes(Tag.PLANT),
       lunaArchivesScience: card.tags.includes(Tag.MOON),
-      // TODO(kberg): add this.isCorporation(CardName.SPIRE)
       spireScience: card.type === CardType.STANDARD_PROJECT,
-      // TODO(kberg): add this.isCorporation(CardName.AURORAI)
       auroraiData: card.type === CardType.STANDARD_PROJECT,
       graphene: card.tags.includes(Tag.CITY) || card.tags.includes(Tag.SPACE),
       kuiperAsteroids: card.name === CardName.AQUIFER_STANDARD_PROJECT || card.name === CardName.ASTEROID_STANDARD_PROJECT,
@@ -1301,9 +1331,9 @@ export class Player implements IPlayer {
    * For example, if the payment is 3M€ and 2 steel, given that steel by default is
    * worth 2M€, this will return 7.
    *
-   * @param {Payment} payment the resources being paid.
-   * @param {PaymentOptions} options any configuration defining the accepted form of payment.
-   * @return {number} a number representing the value of payment in M€.
+   * ../..param {Payment} payment the resources being paid.
+   * ../..param {PaymentOptions} options any configuration defining the accepted form of payment.
+   * ../..return {number} a number representing the value of payment in M€.
    */
   public payingAmount(payment: Payment, options?: Partial<PaymentOptions>): number {
     const multiplier = {
@@ -1454,7 +1484,7 @@ export class Player implements IPlayer {
    *
    * This method indicates the avalilable actions by setting the `waitingFor` attribute of this player.
    *
-   * @param {boolean} saveBeforeTakingAction when true, the game state is saved. Default is `true`. This
+   * ../..param {boolean} saveBeforeTakingAction when true, the game state is saved. Default is `true`. This
    * should only be false in testing and when this method is called during game deserialization. In other
    * words, don't set this value unless you know what you're doing.
    */
@@ -1769,6 +1799,7 @@ export class Player implements IPlayer {
   public serialize(): SerializedPlayer {
     const result: SerializedPlayer = {
       id: this.id,
+      user: this.user,
       corporations: this.corporations.map((corporation) => {
         const serialized = {
           name: corporation.name,
@@ -1859,6 +1890,7 @@ export class Player implements IPlayer {
       alliedParty: this._alliedParty,
       draftHand: this.draftHand.map(toName),
       autoPass: this.autopass,
+      globalParameterSteps: this.globalParameterSteps,
     };
 
     if (this.lastCardPlayed !== undefined) {
@@ -1871,6 +1903,7 @@ export class Player implements IPlayer {
     const player = new Player(d.name, d.color, d.beginner, Number(d.handicap), d.id);
 
     player.actionsTakenThisGame = d.actionsTakenThisGame;
+    player.actionsThisGeneration = new Set<CardName>(d.actionsThisGeneration);
     player.actionsTakenThisRound = d.actionsTakenThisRound;
     player.canUseHeatAsMegaCredits = d.canUseHeatAsMegaCredits;
     player.canUsePlantsAsMegacredits = d.canUsePlantsAsMegaCredits;
@@ -1887,6 +1920,7 @@ export class Player implements IPlayer {
     player.hasIncreasedTerraformRatingThisGeneration = d.hasIncreasedTerraformRatingThisGeneration;
     player.hasTurmoilScienceTagBonus = d.hasTurmoilScienceTagBonus;
     player.heat = d.heat;
+    player.lastCardPlayed = d.lastCardPlayed;
     player.megaCredits = d.megaCredits;
     player.needsToDraft = d.needsToDraft;
     player.oceanBonus = d.oceanBonus;
@@ -1911,13 +1945,10 @@ export class Player implements IPlayer {
     player.colonies.tradesThisGeneration = d.tradesThisGeneration;
     player.turmoilPolicyActionUsed = d.turmoilPolicyActionUsed;
     player.politicalAgendasActionUsedCount = d.politicalAgendasActionUsedCount;
-
-    player.lastCardPlayed = d.lastCardPlayed;
+    player.user = d.user;
 
     // Rebuild removed from play cards (Playwrights, Odyssey)
     player.removedFromPlayCards = cardsFromJSON(d.removedFromPlayCards);
-
-    player.actionsThisGeneration = new Set<CardName>(d.actionsThisGeneration);
 
     if (d.pickedCorporationCard !== undefined) {
       player.pickedCorporationCard = newCorporationCard(d.pickedCorporationCard);
@@ -1965,7 +1996,9 @@ export class Player implements IPlayer {
     }
 
     player.draftHand = cardsFromJSON(d.draftHand);
-
+    if (d.globalParameterSteps) {
+      player.globalParameterSteps = {...DEFAULT_GLOBAL_PARAMETER_STEPS, ...d.globalParameterSteps};
+    }
     return player;
   }
 

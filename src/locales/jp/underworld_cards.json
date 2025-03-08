@@ -15,7 +15,7 @@
     "Requires at least 1 city tile in play. Gain 1 corruption. Increase your M€ production 2 steps.": "条件：都市タイル1枚以上. 1汚職獲得. MC産出+2.",
 
     "Cave City": "洞窟都市",
-    "Requires 1 excavation marker. Increase your M€ production 1 step. Place a city in a space where YOU have an excavation marker. Regular placement restrictions still apply.": "条件：地下採掘1回以上. MC産出+1. あなたが地下採掘した空きマスに都市を1枚配置.",
+    "Requires 1 excavation marker. Increase your M€ production 1 step. Place a city in a space where YOU have an excavation marker. Regular placement restrictions still apply.": "条件：地下採掘1回以上. MC産出+1. あなたが地下採掘した空きマスに都市を1枚配置. 通常の配置制限は引き続き適用されます。",
 
     "Chemical Factory": "化学工場",
     "Action: Spend 1 plant to excavate an underground resource.": "アクション：1植物を支払い、地下資源を採掘する.",
@@ -69,7 +69,7 @@
 
     "Gaia City": "ガイアシティ",
     "Placement Bonus x2": "配置ボーナス2倍",
-    "Reduce your energy production one step and increase your M€ production 2 steps. Place a city in a space with ANY player's excavation marker. Its placement bonus is doubled (including adjacencies.)": "電力産出-1. MC産出+2. 採掘された空きマスに都市を配置. 配置ボーナスおよび隣接ボーナスを倍獲得.",
+    "Reduce your energy production one step and increase your M€ production 2 steps. Place a city in a space with ANY player's excavation marker. Its placement bonus is doubled (including adjacencies.) Regular placement restriction still apply.": "電力産出-1. MC産出+2. 採掘された空きマスに都市を配置. 配置ボーナスおよび隣接ボーナスを倍獲得. 通常の配置制限は引き続き適用されます。",
 
     "Geological Survey:underworld": "地質学的調査",
     "Add 1 data resource to ANOTHER card. Identify any 2 underground resources on Mars.": "1データ獲得. 2回火星上の地下資源を調査する.",
@@ -218,7 +218,6 @@
     "1 VP per 3 data resources on this card.": "このカード上の3データ毎に1VP.",
 
     "Scapegoat": "生け贄",
-    "Gain 1 corruption.": "1汚職獲得.",
 
     "Search for Life Underground": "地下生命探査",
     "Action: Spend 1 M€ to identify an underground resource. If it depicts at least 1 microbe, add a science resource here.": "アクション：1MC支払い、地下資源を調査する. そこに微生物があればこのカード上に1科学リソースを追加する.",
@@ -226,7 +225,7 @@
     "Temperature must -18° C or colder.": "条件：気温-18℃以下.",
 
     "Server Sabotage": "サーバー妨害",
-    "Gain 1 corruption. Remove up to 2 data fromany player. Remove all unclaimed underground resources from the board back into the pile. Their spaces can be identified again.": "1汚職獲得. プレイヤー1人の2データ除去. 採掘されていない資源トークンを全て除去する. それらは再び調査できる.",
+    "Gain 1 corruption. Remove up to 2 data from any player. Remove all unclaimed underground resources from the board back into the pile. Their spaces can be identified again.": "1汚職獲得. プレイヤー1人の2データ除去. 採掘されていない資源トークンを全て除去する. それらは再び調査できる.",
 
     "Soil Export": "土壌輸出",
     "Excavate an underground resource.": "地下資源を採掘する.",
@@ -256,7 +255,6 @@
 
     "Stem Field Subsidies": "STEMフィールド補助金",
     "Effect: Whenever you play a science tag (including this), add 1 data to ANY card and identify an underground resource.": "効果：科学タグをプレイ時、1データ獲得. 地下資源を調査する.",
-    "1 VP per 3 data resources on this card.": "このカード上の3データ毎に1VP.",
 
     "Subnautic Pirates": "潜水海賊",
     "Requires 1 excavation marker and 1 corruption. Pick an ocean tile that has your excavation marker on it. Steal 6 M€ from each other player that owns a tile adjacent to that ocean. This can be blocked by corruption.": "条件：地下採掘1回以上、汚職1つ以上. あなたが地下採掘している海洋を1枚選ぶ. そこに隣接するタイルを所有している他の全プレイヤーから6MC盗む.",

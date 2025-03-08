@@ -1,14 +1,15 @@
 <template>
     <div class="player-tags">
         <div class="player-tags-main">
-            <tag-count :tag="'vp'" :count="player.victoryPointsBreakdown.total" :size="'big'" :type="'main'" :hideCount="hideVpCount" />
+            <tag-count tag="vp" :count="hideVpCount ? '?' : player.victoryPointsBreakdown.total" :size="'big'" :type="'main'" />
             <div v-if="isEscapeVelocityOn" :class="tooltipCss" :data-tooltip="$t('Escape Velocity penalty')">
-              <tag-count :tag="'escape'" :count="escapeVelocityPenalty" :size="'big'" :type="'main'"/>
+              <tag-count tag="escape" :count="escapeVelocityPenalty" :size="'big'" type="'main'" :showWhenZero="true"/>
             </div>
-            <tag-count :tag="'tr'" :count="player.terraformRating" :size="'big'" :type="'main'"/>
+            <tag-count tag="tr" :count="player.terraformRating" :size="'big'" :type="'main'"/>
+            <tag-count v-if="player.handicap !== undefined" :tag="'handicap'" :count="player.handicap" :size="'big'" :type="'main'" :showWhenZero="true"/>
             <div class="tag-and-discount">
               <PlayerTagDiscount v-if="all.discount" :amount="all.discount" :color="player.color"  :data-test="'discount-all'"/>
-              <tag-count :tag="'cards'" :count="cardsInHandCount" :size="'big'" :type="'main'"/>
+              <tag-count tag="cards" :count="cardsInHandCount" :size="'big'" :type="'main'"/>
             </div>
         </div>
         <div class="player-tags-secondary">
@@ -78,18 +79,18 @@ const isInGame = (tag: InterfaceTagsType, game: GameModel): boolean => {
   if (game.turmoil === undefined && tag === SpecialTags.INFLUENCE) return false;
   switch (tag) {
   case SpecialTags.COLONY_COUNT:
-    return gameOptions.coloniesExtension !== false;
+    return gameOptions.expansions.colonies !== false;
   case SpecialTags.INFLUENCE:
     return game.turmoil !== undefined;
   case SpecialTags.EXCAVATIONS:
   case SpecialTags.CORRUPTION:
-    return gameOptions.underworldExpansion !== false;
+    return gameOptions.expansions.underworld !== false;
   case Tag.VENUS:
-    return game.gameOptions.venusNextExtension !== false;
+    return game.gameOptions.expansions.venus !== false;
   case Tag.MOON:
-    return game.gameOptions.moonExpansion !== false;
+    return game.gameOptions.expansions.moon !== false;
   case Tag.MARS:
-    return (gameOptions.pathfindersExpansion || gameOptions.underworldExpansion);
+    return (gameOptions.expansions.pathfinders || gameOptions.expansions.underworld);
   }
   return true;
 };
@@ -108,8 +109,12 @@ const getTagCount = (tagName: InterfaceTagsType, player: PublicPlayerModel): num
     return player.excavations;
   case SpecialTags.CORRUPTION:
     return player.corruption;
+  case 'all':
+  case 'separator':
+    return -1;
+  default:
+    return player.tags[tagName];
   }
-  return player.tags.find((tag) => tag.tag === tagName)?.count ?? 0;
 };
 
 export default Vue.extend({

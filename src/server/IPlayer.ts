@@ -25,7 +25,7 @@ import {Tags} from './player/Tags';
 import {Colonies} from './player/Colonies';
 import {Production} from './player/Production';
 import {ICeoCard} from './cards/ceos/ICeoCard';
-import {IVictoryPointsBreakdown} from '../common/game/IVictoryPointsBreakdown';
+import {VictoryPointsBreakdown} from '../common/game/VictoryPointsBreakdown';
 import {YesAnd} from './cards/requirements/CardRequirement';
 import {PlayableCard} from './cards/IProjectCard';
 import {Color} from '../common/Color';
@@ -34,6 +34,8 @@ import {Stock} from './player/Stock';
 import {UnderworldPlayerData} from './underworld/UnderworldData';
 import {AlliedParty} from './turmoil/AlliedParty';
 import {IParty} from './turmoil/parties/IParty';
+import {Message} from '../common/logs/Message';
+import {DiscordId} from './server/auth/discord';
 
 export type ResourceSource = IPlayer | GlobalEventName | ICard;
 
@@ -106,6 +108,7 @@ export interface IPlayer {
   ceoCardsInHand: Array<IProjectCard>;
   playedCards: Array<IProjectCard>;
   cardCost: number;
+  tableau: Array<ICorporationCard | IProjectCard>;
 
   /** Cards this player has in their draft hand. Player chooses from them, and passes them to the next player */
   draftHand: Array<IProjectCard>;
@@ -120,10 +123,12 @@ export interface IPlayer {
   turmoilPolicyActionUsed: boolean;
   politicalAgendasActionUsedCount: number;
 
+  /** Lakefront Resorts increases ocean adjacency to 3 MC  */
   oceanBonus: number;
 
   // Custom cards
   // Community Leavitt Station and Pathfinders Leavitt Station
+  // Additional science tags (currently only granted from placing colonies)
   scienceTagCount: number;
   // PoliticalAgendas Scientists P41
   hasTurmoilScienceTagBonus: boolean;
@@ -157,7 +162,9 @@ export interface IPlayer {
   readonly alliedParty?: AlliedParty;
 
   tearDown(): void;
-  tableau: Array<ICorporationCard | IProjectCard>;
+
+  // When set, this player can only be accessed by the user.
+  user?: DiscordId;
 
   /**
    * Return `true` if this player has played the supplied corporation card.
@@ -190,7 +197,7 @@ export interface IPlayer {
 
   getActionsThisGeneration(): Set<CardName>;
   addActionThisGeneration(cardName: CardName): void;
-  getVictoryPoints(): IVictoryPointsBreakdown;
+  getVictoryPoints(): VictoryPointsBreakdown;
   /* A card is in effect if it is played. This does not apply to corporations. It could. */
   cardIsInEffect(cardName: CardName): boolean;
   hasProtectedHabitats(): boolean;
@@ -203,7 +210,12 @@ export interface IPlayer {
    * isn't protected.
    */
   canHaveProductionReduced(resource: Resource, minQuantity: number, attacker: IPlayer): boolean;
-  maybeBlockAttack(perpetrator: IPlayer, cb: (proceed: boolean) => PlayerInput | undefined): void;
+  /**
+   * Give this player a chance to block an attack made by `perpetrator`. Call `cb` with true if the attack
+   * is not blocked.
+   */
+  maybeBlockAttack(perpetrator: IPlayer, message: Message | string, cb: (proceed: boolean) => PlayerInput | undefined): void;
+  attack(perpetrator: IPlayer, type: Resource, count: number, options?: {log?: boolean, stealing?: boolean}): void;
 
   /**
    * In the multiplayer game, after an attack, the attacked player makes a claim
@@ -238,6 +250,11 @@ export interface IPlayer {
    * player has thanks to played cards, Turmoil policies, etcetera.
    */
   getGlobalParameterRequirementBonus(parameter: GlobalParameter): number;
+  /**
+   * Called when this player is responsible for increasing a global parameter.
+   */
+  onGlobalParameterIncrease(parameter: GlobalParameter, steps: number): void;
+  readonly globalParameterSteps: Record<GlobalParameter, number>;
   /**
    * Remove resources from this player's played card
    */

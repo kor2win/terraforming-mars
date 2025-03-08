@@ -69,7 +69,7 @@
 "Requires 1 corruption and 1 Earth tag. Gain 1 corruption.": "Benötigt 1 Korruption und 1 Erdsymbol. Erhalte 1 Korruption.",
 
 "Gaia City": "Gaia-Stadt",
-"Reduce your energy production one step and increase your M€ production 2 steps. Place a city in a space with ANY player's excavation marker. Its placement bonus is doubled (including adjacencies.)": "Verringere deine Energie-Produktion um 1 und erhöhe deine M€-Produktion um 2. Platziere eine Stadt auf einem Feld mit einem Ausgrabungsmarker eines beliebigen Spielers. Der Platzierungsbonus wird verdoppelt (einschließlich der Nachbarschaftsboni).",
+"Reduce your energy production one step and increase your M€ production 2 steps. Place a city in a space with ANY player's excavation marker. Its placement bonus is doubled (including adjacencies.) Regular placement restriction still apply.": "Verringere deine Energie-Produktion um 1 und erhöhe deine M€-Produktion um 2. Platziere eine Stadt auf einem Feld mit einem Ausgrabungsmarker eines beliebigen Spielers. Der Platzierungsbonus wird verdoppelt (einschließlich der Nachbarschaftsboni). Die normalen Platzierungsbeschränkungen gelten weiterhin.",
 "Placement Bonus x2": "2x Platzierungsbonus",
 
 "Geological Survey": "Geologische Untersuchung",
@@ -126,7 +126,6 @@
 "Increase your M€ production 1 step for each different TYPE of production you have at least 1 step of.": "Erhöhe deine M€-Produktion um 1 für jede andere Produktionsart, von der du mindestens 1 Stufe hast.",
 
 "Lobbying Network": "Lobbying-Netzwerk",
-"Gain 1 corruption.": "Erhalte 1 Korruption.",
 
 "Man-made Volcano": "Künstlicher Vulkan",
 "Increase your energy production 2 steps and your heat production 4 steps.": "Erhöhe deine Energie-Produktion um 2 und Ihre Wärme-Produktion um 4.",
@@ -216,7 +215,6 @@
 
 "Robot Moles": "Roboter-Maulwürfe",
 "Action: Spend 1 steel to add 1 data to this card and identify 2 underground resources.": "AKTION: Bezahle 1 Stahl, um 1 Datun zu dieser Karte hinzuzufügen und 2 unterirdische Ressourcen zu identifizieren.",
-"1 VP per 3 data resources on this card.": "1 SP für je 3 Datenressourcen auf dieser Karte.",
 
 "Scapegoat": "Sündenbock",
 "Gain 1 corruption.": "Erhalte 1 Korruption.",
@@ -227,7 +225,7 @@
 "Temperature must -18° C or colder.": "Die Temperatur muss -18° C oder kälter sein.",
 
 "Server Sabotage": "Server Sabotage",
-"Gain 1 corruption. Remove up to 2 data fromany player. Remove all unclaimed underground resources from the board back into the pile. Their spaces can be identified again.": "Erhalte 1 Korruption. Entferne bis zu 2 Daten von einem beliebigen Spieler. Entferne alle nicht beanspruchten unterirdischen Ressourcen vom Spielbrett zurück auf den Stapel. Ihre Felder können wieder identifiziert werden.",
+"Gain 1 corruption. Remove up to 2 data from any player. Remove all unclaimed underground resources from the board back into the pile. Their spaces can be identified again.": "Erhalte 1 Korruption. Entferne bis zu 2 Daten von einem beliebigen Spieler. Entferne alle nicht beanspruchten unterirdischen Ressourcen vom Spielbrett zurück auf den Stapel. Ihre Felder können wieder identifiziert werden.",
 
 "Soil Export": "Export von Böden",
 "Excavate an underground resource.": "Grabe eine unterirdische Ressource aus.",

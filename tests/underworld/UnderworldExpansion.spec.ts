@@ -20,7 +20,7 @@ import {PlayerInput} from '../../src/server/PlayerInput';
 import {OrOptions} from '../../src/server/inputs/OrOptions';
 import {PrivateMilitaryContractor} from '../../src/server/cards/underworld/PrivateMilitaryContractor';
 
-describe('UnderworldExpansion', function() {
+describe('UnderworldExpansion', () => {
   let player1: TestPlayer;
   let player2: TestPlayer;
   let game: IGame;
@@ -537,7 +537,7 @@ describe('UnderworldExpansion', function() {
     public playerInput: PlayerInput | undefined = undefined;
 
     public run() {
-      this.playerInput = UnderworldExpansion.maybeBlockAttack(this.target, this.perpetrator, (proceed) => {
+      this.playerInput = UnderworldExpansion.maybeBlockAttack(this.target, this.perpetrator, '', (proceed) => {
         this.proceed = proceed;
         this.called = true;
         return undefined;

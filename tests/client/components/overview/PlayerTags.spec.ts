@@ -2,19 +2,18 @@ import {shallowMount} from '@vue/test-utils';
 import {getLocalVue} from '../getLocalVue';
 import {expect} from 'chai';
 import {CardName} from '@/common/cards/CardName';
-import {Color} from '@/common/Color';
 import PlayerTags from '@/client/components/overview/PlayerTags.vue';
 import {PlayerViewModel, PublicPlayerModel} from '@/common/models/PlayerModel';
 import {RecursivePartial} from '@/common/utils/utils';
 import {Tag} from '@/common/cards/Tag';
 import {Wrapper} from '@vue/test-utils';
 
-describe('PlayerTags', function() {
+describe('PlayerTags', () => {
   let wrapper: Wrapper<PlayerTags>;
 
   beforeEach(() => {
     const player: RecursivePartial<PublicPlayerModel> = {
-      color: Color.BLUE,
+      color: 'blue',
       tableau: [
         {
           name: CardName.CRESCENT_RESEARCH_ASSOCIATION, // 1/3 VP per moon tag
@@ -40,7 +39,7 @@ describe('PlayerTags', function() {
           name: CardName.LUNA_SENATE,
         },
       ],
-      tags: [],
+      tags: {},
       victoryPointsBreakdown: {
         total: 1,
       },
@@ -50,6 +49,22 @@ describe('PlayerTags', function() {
       id: 'playerid-foo',
       game: {
         gameOptions: {
+          expansions: {
+            corpera: true,
+            promo: false,
+            venus: true,
+            colonies: false,
+            prelude: false,
+            prelude2: false,
+            turmoil: false,
+            community: false,
+            ares: false,
+            moon: false,
+            pathfinders: false,
+            ceo: false,
+            starwars: false,
+            underworld: false,
+          },
           showTimers: false,
         },
       },
@@ -59,7 +74,7 @@ describe('PlayerTags', function() {
       localVue: getLocalVue(),
       parentComponent: {
         methods: {
-          getVisibilityState: function() {},
+          getVisibilityState: () => {},
         },
       },
       propsData: {
@@ -73,14 +88,28 @@ describe('PlayerTags', function() {
     wrapper.vm.$data.conciseView = false;
   });
 
-  it('tag discounts', function() {
-    const test = function(tag: Tag | 'all', value: number) {
-      const elem = wrapper.find(`[data-test="discount-${tag}"]`);
-      expect(elem.attributes()['amount']).to.eq(`${value}`);
-    };
-    test(Tag.MICROBE, 3);
-    test(Tag.VENUS, 1);
-    expect(() => test(Tag.EARTH, 0)).to.throw(/find did not return/);
-    test('all', 4);
+  function elem(tag: Tag | 'all'): any {
+    const newLocal: Wrapper<any> = wrapper.find(`[data-test="discount-${tag}"]`);
+    return newLocal;
+  }
+
+  function amount(e: Wrapper<any>): string {
+    return e.attributes()['amount'];
+  }
+
+  it('tag discounts - microbe', () => {
+    expect(amount(elem(Tag.MICROBE))).to.eq('3');
+  });
+
+  it('tag discounts - venus', () => {
+    expect(amount(elem(Tag.VENUS))).to.eq('1');
+  });
+
+  it('tag discounts - all', () => {
+    expect(amount(elem('all'))).to.eq('4');
+  });
+
+  it('tag discounts - earth', () => {
+    expect(elem(Tag.EARTH).exists()).to.eq(false);
   });
 });

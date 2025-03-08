@@ -1,6 +1,6 @@
+import * as constants from '../src/common/constants';
 import {expect} from 'chai';
 import {IGame} from '../src/server/IGame';
-import * as constants from '../src/common/constants';
 import {Space} from '../src/server/boards/Space';
 import {Phase} from '../src/common/Phase';
 import {Turmoil} from '../src/server/turmoil/Turmoil';
@@ -174,6 +174,9 @@ class FakeCard implements IProjectCard {
     }
     return CardRequirements.compile(this.requirements).satisfies(player);
   }
+  public canPlayPostRequirements(): boolean {
+    return true;
+  }
   public play() {
     return undefined;
   }
@@ -263,12 +266,4 @@ export function doWait<T>(player: TestPlayer, klass: new (...args: any[]) => T, 
   const [waitingFor, cb] = player.popWaitingFor2();
   f(cast(waitingFor, klass));
   cb?.();
-}
-
-/**
- * Returns the name of any named item. Ideal for iterating with the Array.map and other iterative functions.
- */
-// Use common/utils/utils/toName
-export function toName<T>(item: {name: T}): T {
-  return item.name;
 }

@@ -9,8 +9,9 @@ import {SelectCard} from '../src/server/inputs/SelectCard';
 import {SerializedGame} from '../src/server/SerializedGame';
 import {testGame} from './TestGame';
 import {InMemoryDatabase} from './testing/InMemoryDatabase';
-import {cast, finishGeneration, toName} from './TestingUtils';
-import {restoreTestDatabase, setTestDatabase} from './utils/setup';
+import {cast, finishGeneration} from './TestingUtils';
+import {toName} from '../src/common/utils/utils';
+import {restoreTestDatabase, setTestDatabase} from './testing/setup';
 
 // Tests for deserializing a game at the start of the drafting phase.
 describe('drafting and serialization', () => {
@@ -696,7 +697,6 @@ const stored = {
     'escapeVelocityMode': false,
     'escapeVelocityBonusSeconds': 2,
     'fastModeOption': false,
-    'includeVenusMA': true,
     'includeFanMA': false,
     'initialDraftVariant': false,
     'moonExpansion': false,

@@ -1,7 +1,7 @@
 import {Philares} from '../../../src/server/cards/promo/Philares';
 import {IGame} from '../../../src/server/IGame';
 import {SpaceType} from '../../../src/common/boards/SpaceType';
-import {EmptyBoard} from '../../ares/EmptyBoard';
+import {EmptyBoard} from '../../testing/EmptyBoard';
 import {TileType} from '../../../src/common/TileType';
 import {Space} from '../../../src/server/boards/Space';
 import {expect} from 'chai';
@@ -140,7 +140,7 @@ describe('Philares', () => {
     ).to.throw('Select 2 resource(s)');
   });
 
-  it('Should take initial action', function() {
+  it('Should take initial action', () => {
     philaresPlayer.deferInitialAction(card);
     runAllActions(game);
 
@@ -149,7 +149,7 @@ describe('Philares', () => {
     expect(philaresPlayer.getTerraformRating()).to.eq(21);
   });
 
-  it('Can place final greenery if gains enough plants from earlier players placing adjacent greeneries', function() {
+  it('Can place final greenery if gains enough plants from earlier players placing adjacent greeneries', () => {
     game.addGreenery(philaresPlayer, space);
 
     // Max out all global parameters
