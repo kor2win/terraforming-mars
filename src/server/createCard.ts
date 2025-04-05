@@ -9,10 +9,14 @@ import {ALL_MODULE_MANIFESTS} from './cards/AllManifests';
 
 const CARD_RENAMES = new Map<string, CardName>([
   // When renaming a card, add the old name here (like the example below), and add a TODO (like the example below)
-  // And remember to add a test in spec.ts.
+  // And remember to add a test in createCard.spec.ts.
 
+  // eg
   // TODO(yournamehere): remove after 2021-04-05
   // ['Space Corridors', CardName.SPACE_LANES],
+
+  // TODO(kberg): Remove after 2025-05-01
+  ['City Park', CardName.CITY_PARKS],
 ]);
 
 function _createCard<T extends ICard>(cardName: CardName, cardManifestNames: Array<keyof ModuleManifest>): T | undefined {
@@ -55,7 +59,7 @@ export function newCeo(cardName: CardName): ICeoCard | undefined {
   return _createCard(cardName, ['ceoCards']);
 }
 
-function cfj<T extends ICard>(cards: Array<CardName>, resolver: (c: CardName) => T | undefined): Array<T> {
+function cfj<T extends ICard>(cards: ReadonlyArray<CardName>, resolver: (c: CardName) => T | undefined): Array<T> {
   if (cards === undefined) {
     console.warn('parameter of array of cards is undefined when calling cardsFromJSON');
     return [];
@@ -72,19 +76,19 @@ function cfj<T extends ICard>(cards: Array<CardName>, resolver: (c: CardName) =>
   return result;
 }
 
-export function cardsFromJSON(cards: Array<CardName>): Array<IProjectCard> {
+export function cardsFromJSON(cards: ReadonlyArray<CardName>): Array<IProjectCard> {
   return cfj(cards, newProjectCard);
 }
 
-export function corporationCardsFromJSON(cards: Array<CardName>): Array<ICorporationCard> {
+export function corporationCardsFromJSON(cards: ReadonlyArray<CardName>): Array<ICorporationCard> {
   return cfj(cards, newCorporationCard);
 }
 
-export function ceosFromJSON(cards: Array<CardName>): Array<ICeoCard> {
+export function ceosFromJSON(cards: ReadonlyArray<CardName>): Array<ICeoCard> {
   return cfj(cards, newCeo);
 }
 
-export function preludesFromJSON(cards: Array<CardName>): Array<IPreludeCard> {
+export function preludesFromJSON(cards: ReadonlyArray<CardName>): Array<IPreludeCard> {
   return cfj(cards, newPrelude);
 }
 

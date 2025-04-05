@@ -33,6 +33,7 @@ import {SelectSpace} from '../src/server/inputs/SelectSpace';
 import {GlobalParameter} from '../src/common/GlobalParameter';
 import {assertPlaceOcean} from './assertions';
 import {TiredEarth} from '../src/server/cards/pathfinders/TiredEarth';
+import {Tag} from '../src/common/cards/Tag';
 
 describe('Game', () => {
   it('should initialize with right defaults', () => {
@@ -708,11 +709,11 @@ describe('Game', () => {
       'discardedColonies',
       'inDoubleDown',
       'inputsThisRound',
+      'inTurmoil',
       'playersInGenerationOrder',
       'monsInsuranceOwner',
       'resettable',
       'rng',
-      'tags',
     ];
     const serializedValuesNotInGame: Array<keyof SerializedGame> = [
       'seed',
@@ -1048,6 +1049,18 @@ it('Arctic Algae works during WGT before Turmoil', () => {
   cb?.(); // Will gain 2 plants and lose 1 plant.
 
   expect(player.plants).to.eq(1);
+});
+
+it('game.tags excludes values accordingly', () => {
+  const player = TestPlayer.BLUE.newPlayer();
+  let game = Game.newInstance('gameid', [player], player, {pathfindersExpansion: true});
+  expect(game.tags).to.include(Tag.VENUS);
+
+  game = Game.newInstance('gameid', [player], player, {pathfindersExpansion: true, bannedCards: [
+    CardName.DYSON_SCREENS,
+    CardName.THINK_TANK,
+  ]});
+  expect(game.tags).does.not.include(Tag.VENUS);
 });
 
 function assertIsJSON(serialized: any) {
