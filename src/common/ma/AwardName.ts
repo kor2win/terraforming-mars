@@ -46,10 +46,10 @@ export const awardNames = [
 
   // Terra Cimmeria
   'Biologist',
-  'T. Economizer',
   'T. Politician',
   'Urbanist',
   'Warmonger',
+  // NB: the fifth award for Terra Cimmeria is Incorporator, a modular award.
 
   // Vastitas Borealis
   'Forecaster',

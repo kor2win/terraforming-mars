@@ -195,8 +195,8 @@ export interface IPlayer {
   setTerraformRating(value: number): void;
   logUnitDelta(resource: Resource, amount: number, unitType: 'production' | 'amount', from: ResourceSource | undefined, stealing?: boolean): void;
 
-  getActionsThisGeneration(): Set<CardName>;
-  addActionThisGeneration(cardName: CardName): void;
+  // The action cards used this generation.
+  actionsThisGeneration: Set<CardName>;
   getVictoryPoints(): VictoryPointsBreakdown;
   /* A card is in effect if it is played. This does not apply to corporations. It could. */
   cardIsInEffect(cardName: CardName): boolean;
@@ -215,6 +215,12 @@ export interface IPlayer {
    * is not blocked.
    */
   maybeBlockAttack(perpetrator: IPlayer, message: Message | string, cb: (proceed: boolean) => PlayerInput | undefined): void;
+
+  /**
+   * Remove or steal standard resources from another player. Could be blocked (see `maybeBlockAttack`.)
+   *
+   * Nothing happens if count is 0.
+   */
   attack(perpetrator: IPlayer, type: Resource, count: number, options?: {log?: boolean, stealing?: boolean}): void;
 
   /**

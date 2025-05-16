@@ -193,7 +193,7 @@ export class Player implements IPlayer {
 
   // This generation / this round
   public actionsTakenThisRound: number = 0;
-  private actionsThisGeneration: Set<CardName> = new Set();
+  public actionsThisGeneration: Set<CardName> = new Set();
   public lastCardPlayed: CardName | undefined;
   public pendingInitialActions: Array<ICorporationCard> = [];
 
@@ -268,16 +268,6 @@ export class Player implements IPlayer {
     this.colonies = new Colonies(this);
     this.production = new Production(this);
     this.stock = new Stock(this);
-  }
-
-  public static initialize(
-    name: string,
-    color: Color,
-    beginner: boolean,
-    handicap: number = 0,
-    id: PlayerId): Player {
-    const player = new Player(name, color, beginner, handicap, id);
-    return player;
   }
 
   public tearDown() {
@@ -434,15 +424,6 @@ export class Player implements IPlayer {
     });
   }
 
-  public getActionsThisGeneration(): Set<CardName> {
-    return this.actionsThisGeneration;
-  }
-
-  public addActionThisGeneration(cardName: CardName): void {
-    this.actionsThisGeneration.add(cardName);
-    return;
-  }
-
   public getVictoryPoints(): VictoryPointsBreakdown {
     return calculateVictoryPoints(this);
   }
@@ -483,6 +464,12 @@ export class Player implements IPlayer {
   }
 
   public attack(perpetrator: IPlayer, resource: Resource, count: number, options?: {log?: boolean, stealing?: boolean}): void {
+    if (count === 0) {
+      return;
+    }
+    if (count < 0) {
+      throw new Error('Unexpected attack count is less than 0 ' + count);
+    }
     const msg = message('Lose ${0} ${1}', (b) => b.number(count).string(resource));
     this.maybeBlockAttack(perpetrator, msg, (proceed) => {
       if (proceed) {
@@ -1503,9 +1490,10 @@ export class Player implements IPlayer {
     // if (saveBeforeTakingAction) game.save();
 
 
-    if (this.autopass) {
-      this.passOption().cb();
-    }
+    // Autopass is disabled.
+    // if (this.autopass) {
+    //   this.passOption().cb();
+    // }
     const headStartIsInEffect = this.headStartIsInEffect();
     this.game.inDoubleDown = false;
 
