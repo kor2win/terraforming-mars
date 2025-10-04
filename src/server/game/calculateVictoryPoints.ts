@@ -7,11 +7,13 @@ import {Turmoil} from '../turmoil/Turmoil';
 import {VictoryPointsBreakdownBuilder} from './VictoryPointsBreakdownBuilder';
 import {FundedAward} from '../awards/FundedAward';
 import {AwardScorer} from '../awards/AwardScorer';
+import {CardName} from '../../common/cards/CardName';
 
 export function calculateVictoryPoints(player: IPlayer) {
   const builder = new VictoryPointsBreakdownBuilder();
 
   // Victory points from cards
+  let playerOwnsVermin = false; // For Vermin
   let negativeVP = 0; // For Underworld.
   for (const playedCard of player.tableau) {
     if (playedCard.victoryPoints !== undefined) {
@@ -21,10 +23,18 @@ export function calculateVictoryPoints(player: IPlayer) {
         negativeVP += vp;
       }
     }
+    playerOwnsVermin ||= playedCard.name === CardName.VERMIN;
+  }
+
+  // Apply the Vermin penalty to other players. Vermin owner is penalized by the card itself.
+  if (player.game.verminInEffect && playerOwnsVermin === false) {
+    const cities = player.game.board.getCities(player).length;
+    builder.setVictoryPoints('victoryPoints', cities * -1, CardName.VERMIN);
+    negativeVP -= cities;
   }
 
   // Victory points from TR
-  builder.setVictoryPoints('terraformRating', player.getTerraformRating());
+  builder.setVictoryPoints('terraformRating', player.terraformRating);
 
   // Victory points from awards
   giveAwards(player, builder);
@@ -59,7 +69,7 @@ export function calculateVictoryPoints(player: IPlayer) {
 
   Turmoil.ifTurmoil(player.game, (turmoil) => {
     if (includeTurmoilVP) {
-      builder.setVictoryPoints('victoryPoints', turmoil.getPlayerVictoryPoints(player), 'Turmoil Points');
+      builder.setVictoryPoints('victoryPoints', turmoil.getVictoryPoints(player), 'Turmoil Points');
     }
   });
 
@@ -111,7 +121,7 @@ function giveAwards(player: IPlayer, builder: VictoryPointsBreakdownBuilder) {
   player.game.fundedAwards.forEach((fundedAward) => {
     const award = fundedAward.award;
     const scorer = new AwardScorer(player.game, award);
-    const players: Array<IPlayer> = player.game.getPlayers().slice();
+    const players: Array<IPlayer> = player.game.players.slice();
     players.sort((p1, p2) => scorer.get(p2) - scorer.get(p1));
 
     // There is one rank 1 player

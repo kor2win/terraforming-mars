@@ -12,7 +12,7 @@ import {CEO_CARD_MANIFEST} from './cards/ceos/CeoCardManifest';
 import {CardManifest, ModuleManifest} from './cards/ModuleManifest';
 import {CardName} from '../common/cards/CardName';
 import {ICard} from './cards/ICard';
-import {isCompatibleWith} from './cards/ICardFactory';
+import {isCompatibleWith} from './cards/CardFactorySpec';
 import {GameOptions} from './game/GameOptions';
 import {ICorporationCard} from './cards/corporation/ICorporationCard';
 import {isIProjectCard, IProjectCard} from './cards/IProjectCard';
@@ -119,12 +119,7 @@ export class GameCards {
       const idx = cards.findIndex((c) => c.name === cardName);
       if (idx === -1) {
         const card = newCard(cardName);
-        if (card === undefined) {
-          // TODO(kberg): throw an error.
-          console.warn(`Unknown card: ${cardName}`);
-        } else {
-          cards.push(<T> card);
-        }
+        cards.push(<T> card);
       }
     }
     return cards;
@@ -145,6 +140,13 @@ export class GameCards {
 
   /* Remove cards excluded by choice in game options */
   private filterBannedCards<T extends ICard>(cards: Array<T>): Array<T> {
+    const BROKEN_CARDS = [
+      CardName.SUITABLE_INFRASTRUCTURE, // #7610
+      CardName.MARS_FRONTIER_ALLIANCE, // #7519
+    ];
+    // Remove the broken cards.
+    // TODO(kberg): Remove this block, and comment out the cards, after 2025-10-10
+    cards = cards.filter((card) => !BROKEN_CARDS.includes(card.name));
     return cards.filter((card) => {
       return this.gameOptions.bannedCards.includes(card.name) !== true;
     });
