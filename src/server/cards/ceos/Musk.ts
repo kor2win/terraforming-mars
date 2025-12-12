@@ -43,7 +43,7 @@ export class Musk extends CeoCard {
       'Select Earth card(s) to discard',
       'Discard',
       eligibleCards,
-      {min: 0, max: eligibleCards.length})
+      {min: 0, max: eligibleCards.length, isDiscarding: true})
       .andThen(
         (cards) => {
           player.stock.add(Resource.TITANIUM, cards.length + 6, {log: true});
