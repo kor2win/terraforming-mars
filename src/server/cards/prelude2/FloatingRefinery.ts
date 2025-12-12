@@ -27,6 +27,7 @@ export class FloatingRefinery extends Card implements IProjectCard, IActionCard 
       },
 
       metadata: {
+        cardNumber: 'P73',
         renderData: CardRenderer.builder((b) => {
           b.action('Add 1 floater here.', (ab) => {
             ab.empty().startAction.resource(CardResource.FLOATER);
@@ -41,8 +42,8 @@ export class FloatingRefinery extends Card implements IProjectCard, IActionCard 
     });
   }
 
-  public canAct(player: IPlayer) {
-    return player.getResourceCount(CardResource.FLOATER) > 0;
+  public canAct() {
+    return true;
   }
 
   public action(player: IPlayer) {

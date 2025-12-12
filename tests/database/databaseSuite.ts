@@ -1,17 +1,19 @@
-import {expect} from 'chai';
-import {use} from 'chai';
+import {expect, use} from 'chai';
 import chaiAsPromised = require('chai-as-promised');
 use(chaiAsPromised);
+import chaiDeepEqualIgnoreUndefined from 'chai-deep-equal-ignore-undefined';
+use(chaiDeepEqualIgnoreUndefined);
 
 import {ITestDatabase} from './ITestDatabase';
 import {Game} from '../../src/server/Game';
 import {TestPlayer} from '../TestPlayer';
-import {restoreTestDatabase, setTestDatabase} from '../utils/setup';
+import {restoreTestDatabase, setTestDatabase} from '../testing/setup';
 import {testGame} from '../TestGame';
 import {GameId} from '../../src/common/Types';
 import {statusCode} from '../../src/common/http/statusCode';
 import {cast} from '../TestingUtils';
 import {SelectInitialCards} from '../../src/server/inputs/SelectInitialCards';
+import {DiscordUser} from '../../src/server/server/auth/discord';
 
 /**
  * Describes a database test
@@ -24,6 +26,7 @@ export type DatabaseTestDescriptor<T extends ITestDatabase> = {
     purgeUnfinishedGames: boolean,
     markFinished: boolean,
     moreCleaning: boolean,
+    sessions: boolean,
   }>,
   otherTests?(dbFactory: () => T): void,
 };
@@ -200,6 +203,24 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
       });
     }
 
+    it('getGame', async () => {
+      const player = TestPlayer.BLACK.newPlayer();
+      const game = Game.newInstance('game-id-1212', [player], player, {underworldExpansion: true});
+      await db.lastSaveGamePromise;
+      expect(game.lastSaveId).eq(1);
+
+      player.megaCredits = 200;
+      game.log('databaseSuite.getGame test');
+
+      const expected = game.serialize();
+      await db.saveGame(game);
+
+      const actual = await db.getGame(game.id);
+      expect(actual.gameLog[actual.gameLog.length -1].message).eq('databaseSuite.getGame test');
+      expect(actual.gameOptions.underworldExpansion).eq(true);
+      expect(actual).deepEqualIgnoreUndefined(expected);
+    });
+
     it('getGameVersion', async () => {
       const player = TestPlayer.BLACK.newPlayer();
       const game = Game.newInstance('game-id-1212', [player], player);
@@ -243,6 +264,7 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
           'participantIds': [
             'p-player1-id1',
             'p-player2-id1',
+            'spectator-id1',
           ],
         },
       ]);
@@ -254,6 +276,7 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
           'participantIds': [
             'p-player1-id1',
             'p-player2-id1',
+            'spectator-id1',
           ],
         },
         {
@@ -262,13 +285,13 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
             'p-player1-id2',
             'p-player2-id2',
             'p-player3-id2',
+            'spectator-id2',
           ],
         },
       ]);
     });
 
-    it('getGameId', async () => {
-      // TODO(kberg): this does not test spectator ids.
+    it('getGameId by PlayerID and Spectator ID', async () => {
       testGame(2, {}, '1');
       await db.lastSaveGamePromise;
       testGame(3, {}, '2');
@@ -276,6 +299,10 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
       expect(await db.getGameId('p-player1-id1')).eq('game-id1');
       expect(await db.getGameId('p-player3-id2')).eq('game-id2');
       expect(db.getGameId('p-unknown')).to.be.rejected;
+
+      expect(await db.getGameId('spectator-id1')).eq('game-id1');
+      expect(await db.getGameId('spectator-id2')).eq('game-id2');
+      expect(db.getGameId('spectator-unknown')).to.be.rejected;
     });
 
     it('deleteGameNbrSaves', async () => {
@@ -297,6 +324,34 @@ export function describeDatabaseSuite<T extends ITestDatabase>(dtor: DatabaseTes
       const saveIds = await db.getSaveIds(game.id);
       expect(saveIds).has.members([0, 1, 2, 3]);
     });
+
+    if (dtor.omit?.sessions !== true) {
+      const discordUser = {id: 'xyz'} as DiscordUser;
+      it('createSession', async () => {
+        const expirationTimeMillis = Date.now() + 100000;
+        await db.createSession({id: '123', expirationTimeMillis, data: {discordUser}});
+        const sessions = await db.getSessions();
+        expect(sessions).deep.eq([{id: '123', expirationTimeMillis, data: {discordUser}}]);
+      });
+
+      it('deleteSession', async () => {
+        // TODO(kberg): Make databases rely on Clock. /shrug
+        const expirationTimeMillis = Date.now() + 100000;
+        await db.createSession({id: '123', expirationTimeMillis, data: {discordUser}});
+        let sessions = await db.getSessions();
+        expect(sessions).deep.eq([{id: '123', expirationTimeMillis, data: {discordUser}}]);
+        await db.deleteSession('123');
+        sessions = await db.getSessions();
+        expect(sessions).to.be.empty;
+      });
+
+      it('expiredSession', async () => {
+        const expirationTimeMillis = Date.now() - 1;
+        await db.createSession({id: '123', expirationTimeMillis, data: {discordUser}});
+        const sessions = await db.getSessions();
+        expect(sessions).to.be.empty;
+      });
+    }
 
     it('stats', async () => {
       const result = await db.stats();

@@ -6,8 +6,9 @@ import {CardRenderer} from '../render/CardRenderer';
 import {CardResource} from '../../../common/CardResource';
 import {IActionCard} from '../ICard';
 import {Size} from '../../../common/cards/render/Size';
+import {ICorporationCard} from '../corporation/ICorporationCard';
 
-export class KuiperCooperative extends CorporationCard implements IActionCard {
+export class KuiperCooperative extends CorporationCard implements ICorporationCard, IActionCard {
   constructor() {
     super({
       name: CardName.KUIPER_COOPERATIVE,
@@ -20,7 +21,7 @@ export class KuiperCooperative extends CorporationCard implements IActionCard {
       },
 
       metadata: {
-        cardNumber: '',
+        cardNumber: 'XC01', // Rename
         description: 'You start with 33 M€. Increase titanium production 1 step.',
         renderData: CardRenderer.builder((b) => {
           b.megacredits(33).production((pb) => pb.titanium(1)).br;

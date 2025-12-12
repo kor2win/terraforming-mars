@@ -4,11 +4,12 @@ import {testGame} from '../../TestGame';
 import {Phase} from '../../../src/common/Phase';
 import {WorldGovernmentAdvisor} from '../../../src/server/cards/prelude2/WorldGovernmentAdvisor';
 import {IGame} from '../../../src/server/IGame';
-import {cast, runAllActions, setTemperature} from '../../TestingUtils';
+import {cast, maxOutOceans, runAllActions, setOxygenLevel, setTemperature} from '../../TestingUtils';
 import {OrOptions} from '../../../src/server/inputs/OrOptions';
 import {assertPlaceOcean} from '../../assertions';
 import {SelectSpace} from '../../../src/server/inputs/SelectSpace';
 import {TileType} from '../../../src/common/TileType';
+import {MAX_OXYGEN_LEVEL, MAX_TEMPERATURE} from '../../../src/common/constants';
 
 describe('WorldGovernmentAdvisor', () => {
   let card: WorldGovernmentAdvisor;
@@ -22,7 +23,7 @@ describe('WorldGovernmentAdvisor', () => {
 
   it('play', () => {
     cast(card.play(player), undefined);
-    expect(player.getTerraformRating()).eq(16);
+    expect(player.terraformRating).eq(16);
     expect(player.cardsInHand).has.length(1);
   });
 
@@ -32,7 +33,7 @@ describe('WorldGovernmentAdvisor', () => {
 
     expect(game.phase).eq(Phase.SOLAR);
     expect(orOptions.options[0].title).eq('Increase temperature');
-    expect(player.getTerraformRating()).eq(14);
+    expect(player.terraformRating).eq(14);
 
     orOptions.options[0].cb();
     orOptions.cb(undefined);
@@ -41,12 +42,12 @@ describe('WorldGovernmentAdvisor', () => {
 
     cast(player.popWaitingFor(), undefined);
     expect(game.phase).eq(Phase.ACTION);
-    expect(player.getTerraformRating()).eq(14);
+    expect(player.terraformRating).eq(14);
     expect(game.getTemperature()).eq(-28);
 
     // After this player raises temperature and it rewards them.
     game.increaseTemperature(player, 1);
-    expect(player.getTerraformRating()).eq(15);
+    expect(player.terraformRating).eq(15);
     expect(game.getTemperature()).eq(-26);
   });
 
@@ -64,7 +65,7 @@ describe('WorldGovernmentAdvisor', () => {
     runAllActions(game);
 
     cast(player.popWaitingFor(), undefined);
-    expect(player.getTerraformRating()).eq(14);
+    expect(player.terraformRating).eq(14);
   });
 
   it('action - placing an ocean', () => {
@@ -81,7 +82,7 @@ describe('WorldGovernmentAdvisor', () => {
     runAllActions(game);
 
     cast(player.popWaitingFor(), undefined);
-    expect(player.getTerraformRating()).eq(14);
+    expect(player.terraformRating).eq(14);
     expect(player.megaCredits).eq(0);
   });
 
@@ -98,6 +99,23 @@ describe('WorldGovernmentAdvisor', () => {
     runAllActions(game);
 
     cast(player.popWaitingFor(), undefined);
-    expect(player.getTerraformRating()).eq(14);
+    expect(player.terraformRating).eq(14);
+  });
+
+  it('canAct - game is at maximum', () => {
+    setTemperature(game, MAX_TEMPERATURE);
+    setOxygenLevel(game, MAX_OXYGEN_LEVEL);
+    maxOutOceans(player);
+
+    expect(card.canAct(player)).is.true;
+    expect(card.warnings.has('marsIsTerraformed')).is.true;
+  });
+
+  it('action - game is at maximum', () => {
+    setTemperature(game, MAX_TEMPERATURE);
+    setOxygenLevel(game, MAX_OXYGEN_LEVEL);
+    maxOutOceans(player);
+
+    cast(card.action(player), undefined);
   });
 });

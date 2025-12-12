@@ -45,7 +45,6 @@ function calc(params: URLSearchParams): string {
 
   if (params.get('venus') === 'true') {
     options.venusNextExtension = true;
-    options.includeVenusMA = true;
   }
 
   if (params.get('ares') === 'true') {
@@ -78,8 +77,9 @@ function calc(params: URLSearchParams): string {
     }
     try {
       const mas = chooseMilestonesAndAwards(options);
-      mas.awards.forEach((award) => results.add(award.name));
-      mas.milestones.forEach((milestone) => results.add(milestone.name));
+      for (const ma of (mas.milestones as Array<string>).concat(mas.awards)) {
+        results.add(ma);
+      }
     } catch (err) {
       console.log(err);
       results.add('ERROR');
@@ -105,7 +105,6 @@ function simpleGameOptions(): GameOptions {
     boardName: BoardName.THARSIS,
     venusNextExtension: false,
     aresExtension: false,
-    includeVenusMA: false,
     moonExpansion: false,
     pathfindersExpansion: false,
     includeFanMA: false,

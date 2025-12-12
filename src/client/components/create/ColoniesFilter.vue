@@ -1,32 +1,43 @@
 <template>
-    <div class="colonies-filter">
-        <div>
-            <h2 v-i18n>Colonies</h2>
-            <div class="corporations-filter-toolbox corporations-filter-toolbox--topmost">
-                <a href="#" v-i18n v-on:click.prevent="selectAll('All')">All*</a> |
-                <a href="#" v-i18n v-on:click.prevent="selectNone('All')">None*</a> |
-                <a href="#" v-i18n v-on:click.prevent="invertSelection('All')">Invert*</a>
-                <input :placeholder="$t('filter')" v-model="filterText">
-            </div>
+  <PopupPanel @close="$emit('close')">
+    <template v-slot:header>
+      <div>
+        <h2 v-i18n>Colonies</h2>
+        <div class="corporations-filter-toolbox corporations-filter-toolbox--topmost">
+          <a href="#" v-i18n v-on:click.prevent="selectAll('All')">All*</a> |
+          <a href="#" v-i18n v-on:click.prevent="selectNone('All')">None*</a> |
+          <a href="#" v-i18n v-on:click.prevent="invertSelection('All')">Invert*</a>
+          <input :placeholder="$t('filter')" v-model="filterText">
         </div>
+      </div>
+    </template>
+    <div>
+      <div class="colonies-filter">
         <div class="colonies-filter-list" v-for="module in modules" v-bind:key="module">
-            <h2 v-i18n>{{title(module)}}</h2>
-              <a href="#" v-i18n v-on:click.prevent="selectAll(module)">All</a> |
-              <a href="#" v-i18n v-on:click.prevent="selectNone(module)">None</a> |
-              <a href="#" v-i18n v-on:click.prevent="invertSelection(module)">Invert</a>
-            <label class="form-checkbox" v-for="colony in getColonies(module)" v-bind:key="colony" v-show="include(colony)">
-                <input type="checkbox" v-model="selectedColonies" :value="colony">
-                <i class="form-icon"></i><span v-i18n>{{ colony }} - ({{ COLONY_DESCRIPTIONS[colony] }})</span>
-            </label>
+          <h2 v-i18n>{{ title(module) }}</h2>
+          <a href="#" v-i18n v-on:click.prevent="selectAll(module)">All</a> |
+          <a href="#" v-i18n v-on:click.prevent="selectNone(module)">None</a> |
+          <a href="#" v-i18n v-on:click.prevent="invertSelection(module)">Invert</a>
+          <label class="form-checkbox" v-for="colony in getColonies(module)" v-bind:key="colony"
+            v-show="include(colony)">
+            <input type="checkbox" v-model="selectedColonies" :value="colony">
+            <i class="form-icon"></i><span v-i18n>{{ colony }} - ({{ COLONY_DESCRIPTIONS[ colony ] }})</span>
+            <div v-if="compatibility(colony)" :class="icon(compatibility(colony))"></div>
+          </label>
         </div>
+      </div>
     </div>
+  </PopupPanel>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
+import PopupPanel from '../common/PopupPanel.vue';
 import {ColonyName} from '@/common/colonies/ColonyName';
 import {COLONY_DESCRIPTIONS} from '@/common/colonies/ColonyDescription';
 import {OFFICIAL_COLONY_NAMES, COMMUNITY_COLONY_NAMES, PATHFINDERS_COLONY_NAMES} from '@/common/colonies/AllColonies';
+import {Expansion} from '@/common/cards/GameModule';
+import {getColony} from '@/client/colonies/ClientColonyManifest';
 
 type Data = {
   filterText: string,
@@ -42,22 +53,12 @@ type Group = ColonyModule | 'All';
 
 export default Vue.extend({
   name: 'ColoniesFilter',
+  components: {
+    PopupPanel,
+  },
   props: {
-    communityCardsOption: {
-      type: Boolean,
-    },
-    venusNext: {
-      type: Boolean,
-    },
-    turmoil: {
-      type: Boolean,
-    },
-    pathfinders: {
-      type: Boolean,
-    },
-    ares: {
-      type: Boolean,
-    },
+    expansions: Object as () => Record<Expansion, boolean>,
+    selected: Array as () => Array<ColonyName>,
   },
   data() {
     const officialColonies = [...OFFICIAL_COLONY_NAMES].sort();
@@ -66,14 +67,14 @@ export default Vue.extend({
 
     const data: Data = {
       filterText: '',
-      allColonies: officialColonies.concat(communityColonies),
+      allColonies: officialColonies.concat(communityColonies).concat(pathfindersColonies),
       officialColonies,
       communityColonies,
       pathfindersColonies,
-      selectedColonies: [
+      selectedColonies: this.selected.length > 0 ? this.selected : [
         ...officialColonies,
-        ...this.communityCardsOption ? communityColonies: [],
-        ...this.pathfinders ? pathfindersColonies: [],
+        ...this.expansions.community ? communityColonies: [],
+        ...this.expansions.pathfinders ? pathfindersColonies: [],
       ],
       modules: ['colonies', 'community', 'pathfinders'],
     };
@@ -148,6 +149,22 @@ export default Vue.extend({
       }
       return name.toLocaleUpperCase().includes(normalized);
     },
+    compatibility(colonyName: ColonyName): Expansion | undefined {
+      return getColony(colonyName)?.expansion;
+    },
+    icon(module: Expansion | undefined) {
+      if (module === undefined) {
+        return undefined;
+      }
+      let suffix: string = module;
+      if (module === 'colonies') {
+        suffix = 'colony';
+      }
+      if (module === 'moon') {
+        suffix = 'themoon';
+      }
+      return `create-game-expansion-icon expansion-icon-${suffix}`;
+    },
   },
   computed: {
     COLONY_DESCRIPTIONS(): typeof COLONY_DESCRIPTIONS {
@@ -162,15 +179,15 @@ export default Vue.extend({
     communityCardsOption(enabled) {
       if (enabled) {
         this.selectedColonies = OFFICIAL_COLONY_NAMES.concat(COMMUNITY_COLONY_NAMES).slice();
-        if (this.venusNext === false) this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.VENUS);
-        if (this.turmoil === false) this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.PALLAS);
-        if (this.ares === false) this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.DEIMOS);
+        if (this.expansions.venus === false) this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.VENUS);
+        if (this.expansions.turmoil === false) this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.PALLAS);
+        if (this.expansions.ares === false) this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.DEIMOS);
       } else {
         this.selectedColonies = OFFICIAL_COLONY_NAMES.slice();
       }
     },
     venusNext(enabled) {
-      if (this.communityCardsOption && Array.isArray(this.selectedColonies)) {
+      if (this.expansions.community && Array.isArray(this.selectedColonies)) {
         if (enabled === false) {
           this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.VENUS);
         } else if (!this.selectedColonies.includes(ColonyName.VENUS)) {
@@ -179,7 +196,7 @@ export default Vue.extend({
       }
     },
     turmoil(enabled) {
-      if (this.communityCardsOption && Array.isArray(this.selectedColonies)) {
+      if (this.expansions.community && Array.isArray(this.selectedColonies)) {
         if (enabled === false) {
           this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.PALLAS);
         } else if (!this.selectedColonies.includes(ColonyName.PALLAS)) {
@@ -188,7 +205,7 @@ export default Vue.extend({
       }
     },
     ares(enabled) {
-      if (this.communityCardsOption && Array.isArray(this.selectedColonies)) {
+      if (this.expansions.community && Array.isArray(this.selectedColonies)) {
         if (enabled === false) {
           this.selectedColonies = this.selectedColonies.filter((c) => c !== ColonyName.DEIMOS);
         } else if (!this.selectedColonies.includes(ColonyName.DEIMOS)) {

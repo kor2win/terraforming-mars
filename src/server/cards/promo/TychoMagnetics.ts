@@ -5,8 +5,9 @@ import {CorporationCard} from '../corporation/CorporationCard';
 import {Resource} from '../../../common/Resource';
 import {IPlayer} from '../../IPlayer';
 import {SelectAmount} from '../../inputs/SelectAmount';
+import {ICorporationCard} from '../corporation/ICorporationCard';
 
-export class TychoMagnetics extends CorporationCard {
+export class TychoMagnetics extends CorporationCard implements ICorporationCard {
   constructor() {
     super({
       name: CardName.TYCHO_MAGNETICS,
@@ -17,7 +18,7 @@ export class TychoMagnetics extends CorporationCard {
       },
 
       metadata: {
-        cardNumber: '',
+        cardNumber: 'XC02', // Rename
         description: 'You start with 42 M€. Increase your energy production 1 step.',
         renderData: CardRenderer.builder((b) => {
           b.br.br;

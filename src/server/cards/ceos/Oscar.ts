@@ -13,11 +13,11 @@ export class Oscar extends CeoCard {
       metadata: {
         cardNumber: 'L15',
         renderData: CardRenderer.builder((b) => {
-          b.plus().influence();
+          b.effect('You have +1 influence', (eb) => eb.startEffect.influence());
           b.br.br;
           b.opgArrow().chairman();
         }),
-        description: 'You have +1 influence. Once per game, replace the Chairman with one of your delegates.',
+        description: 'Once per game, replace the Chairman with one of your delegates.',
       },
     });
   }
@@ -40,8 +40,8 @@ export class Oscar extends CeoCard {
     const turmoil = Turmoil.getTurmoil(player.game);
     turmoil.setNewChairman(player, player.game, /* setAgenda*/false, /* gainTR*/false);
     turmoil.delegateReserve.remove(player);
-    // Increase totalDelegatesPlaced manually since we're not using SendDeletageToArea()
-    // If we dont do this player will not get the bonus for POLITICAN Awards
+    // Increase totalDelegatesPlaced manually since we're not using SendDelegateToArea()
+    // If we dont do this player will not get the bonus for POLITICIAN Awards
     player.totalDelegatesPlaced += 1;
     this.isDisabled = true;
     return undefined;

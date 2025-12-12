@@ -18,7 +18,7 @@ describe('IndustrialComplex', () => {
 
   beforeEach(() => {
     card = new IndustrialComplex();
-    [game, player] = testGame(1);
+    [game, player] = testGame(2);
   });
 
   const runs = [
@@ -28,6 +28,12 @@ describe('IndustrialComplex', () => {
     },
     {
       stock: {megacredits: 18}, production: {}, corps: [],
+      canPlay: true,
+      payment: undefined,
+      expected: {production: {}, stock: {}},
+    },
+    {
+      stock: {megacredits: 18}, production: {steel: 1}, corps: [],
       canPlay: true,
       payment: undefined,
       expected: {production: {}, stock: {}},
@@ -54,6 +60,12 @@ describe('IndustrialComplex', () => {
       payment: {megacredits: 16, titanium: 1},
       expected: {production: {}, stock: {megacredits: 1}},
     },
+    {
+      stock: {megacredits: 18}, production: {megacredits: -5}, corps: [],
+      canPlay: true,
+      payment: undefined,
+      expected: {production: {}, stock: {}},
+    },
   ] as const;
 
   for (const run of runs) {
@@ -66,7 +78,7 @@ describe('IndustrialComplex', () => {
           player.canUseTitaniumAsMegacredits = true;
         }
         if (corp === CardName.MANUTECH) {
-          player.corporations.push(newCorporationCard(corp)!);
+          player.playedCards.push(newCorporationCard(corp)!);
         }
       }
       player.stock.override(run.stock);
@@ -84,7 +96,7 @@ describe('IndustrialComplex', () => {
             player.canUseTitaniumAsMegacredits = true;
           }
           if (corp === CardName.MANUTECH) {
-            player.corporations.push(newCorporationCard(corp)!);
+            player.playedCards.push(newCorporationCard(corp)!);
           }
         }
         player.stock.override(run.stock);

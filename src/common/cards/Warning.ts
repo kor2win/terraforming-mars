@@ -1,4 +1,6 @@
 export type Warning =
+ 'pass' |
+ 'undoBestEffort' |
  'maxtemp' |
  'maxoxygen' |
  'maxoceans' |
@@ -10,6 +12,14 @@ export type Warning =
  'removeOwnPlants' |
  'buildOnLuna' |
  'preludeFizzle' |
- 'underworldMustExcavateEnergy' |
  'deckTooSmall' |
- 'cannotAffordBoardOfDirectors';
+ 'cannotAffordBoardOfDirectors' |
+ 'marsIsTerraformed' |
+ 'ineffectiveDoubleDown' |
+ 'noMatchingCards' |
+ 'unusableEventsForAstraMechanica' |
+ 'noEffect' |
+ 'selfTarget' |
+ 'pharmacyUnion' |
+ 'kaguyaTech' |
+ 'underworldtokendiscard';

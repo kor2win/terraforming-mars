@@ -26,7 +26,7 @@ export class VenusContract extends PreludeCard {
             eb.venus(1).startEffect.megacredits(3);
           });
           b.br;
-          b.cards(1, {tag: Tag.VENUS}).tr(1);
+          b.cards(1, {secondaryTag: Tag.VENUS}).tr(1);
         }),
       },
     });
@@ -34,7 +34,7 @@ export class VenusContract extends PreludeCard {
 
   public onGlobalParameterIncrease(player: IPlayer, parameter: GlobalParameter, steps: number) {
     if (parameter === GlobalParameter.VENUS) {
-      player.stock.add(Resource.MEGACREDITS, 3 * steps, {log: true});
+      player.stock.add(Resource.MEGACREDITS, 3 * steps, {log: true, from: {card: this}});
     }
   }
 }
