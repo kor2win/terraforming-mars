@@ -23,6 +23,8 @@ export type Options = {
   showOwner: boolean,
   /** Default is false. If true, show a "Select All" / "Deselect All" toggle button. */
   showSelectAll: boolean,
+  /** Default is false. If true, then border color for selected card becomes red-ish (as discard warning). */
+  isDiscarding: boolean,
 }
 export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T>> {
   public config: Options;
@@ -42,6 +44,7 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
       played: config?.played ?? true,
       showOwner: config?.showOwner ?? false,
       showSelectAll: config?.showSelectAll ?? false,
+      isDiscarding: config?.isDiscarding ?? false,
     };
     this.buttonLabel = buttonLabel;
   }
@@ -70,6 +73,7 @@ export class SelectCard<T extends ICard> extends BasePlayerInput<ReadonlyArray<T
       showOwner: this.config.showOwner === true,
       showSelectAll: this.config.showSelectAll === true,
       optional: this.optional,
+      isDiscarding: this.config.isDiscarding,
     };
   }
 

@@ -33,7 +33,7 @@ export class Stefan extends CeoCard {
       'Sell patents',
       'Sell',
       player.cardsInHand,
-      {min: 0, max: player.cardsInHand.length})
+      {min: 0, max: player.cardsInHand.length, isDiscarding: true})
       .andThen((cards) => {
         player.megaCredits += cards.length * 3;
 

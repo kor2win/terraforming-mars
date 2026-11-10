@@ -87,6 +87,11 @@ export default defineComponent({
       required: false,
       default: false,
     },
+    isDiscarding: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   data() {
     return {
@@ -142,6 +147,10 @@ export default defineComponent({
         classes.push('card-unavailable');
       } else if (!getPreferences().experimental_ui && this.actionUsed) {
         classes.push('card-unavailable');
+      }
+
+      if (this.isDiscarding) {
+        classes.push('discarding');
       }
 
       if (this.isStandardProject) {

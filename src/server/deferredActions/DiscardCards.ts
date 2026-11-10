@@ -42,7 +42,7 @@ export class DiscardCards extends DeferredAction<ReadonlyArray<IProjectCard>> {
       title,
       'Discard',
       this.player.cardsInHand,
-      {min: this.min, max: this.max})
+      {min: this.min, max: this.max, isDiscarding: true})
       .andThen((discards) => {
         for (const card of discards) {
           this.player.discardCardFromHand(card);
